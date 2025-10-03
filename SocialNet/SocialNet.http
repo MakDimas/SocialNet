@@ -1,0 +1,6 @@
+@SocialNet_HostAddress = http://localhost:5044
+
+GET {{SocialNet_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
