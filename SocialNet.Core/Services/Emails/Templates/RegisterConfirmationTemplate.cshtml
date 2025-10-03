@@ -1,0 +1,17 @@
+﻿@model string
+@{
+    var confirmationUrl = Model;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+</head>
+<body>
+    <p>Hello,</p>
+    <p>Thank you for registering. Please confirm your email address by clicking the link below:</p>
+    <p><a href='@confirmationUrl'>Confirm Your Email</a></p>
+    <p>If you did not register, please ignore this email.</p>
+</body>
+</html>

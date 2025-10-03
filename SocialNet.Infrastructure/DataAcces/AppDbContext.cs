@@ -9,10 +9,7 @@ public class AppDbContext : IdentityDbContext<User, Role, int>
     public virtual DbSet<Role> Roles { get; set; }
     public virtual DbSet<User> Users { get; set; }
 
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) 
-    {
-        Database.EnsureCreated();
-    }
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
