@@ -1,12 +1,11 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using SocialNet.Core;
+using SocialNet.Core.Dtos.EmailDtos;
 using SocialNet.Domain.Identity;
+using SocialNet.Infrastructure;
 using SocialNet.Infrastructure.DataAcces;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("ConnectionString")));
 
 builder.Services.AddIdentity<User, Role>()
     .AddEntityFrameworkStores<AppDbContext>()
@@ -16,6 +15,11 @@ builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
+
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApplicationCore();
 
 var app = builder.Build();
 
