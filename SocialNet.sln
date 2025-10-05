@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36414.22
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialNet.WebAPI", "SocialNet\SocialNet.WebAPI.csproj", "{4ED4BB02-0F09-49B7-BA1F-021C1F5C83D7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialNet.WebAPI", "SocialNet.WebAPI\SocialNet.WebAPI.csproj", "{4ED4BB02-0F09-49B7-BA1F-021C1F5C83D7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialNet.Domain", "SocialNet.Domain\SocialNet.Domain.csproj", "{C2F1AA10-D439-4123-B36D-6B07B3706AA4}"
 EndProject

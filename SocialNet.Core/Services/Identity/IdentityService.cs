@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using SocialNet.Core.Dtos.IdentityDtos;
+using SocialNet.Core.Extensions;
 using SocialNet.Core.Services.Token;
 using SocialNet.Domain.Identity;
 
@@ -20,6 +21,37 @@ public class IdentityService : IIdentityService
         _logger = logger;
     }
 
+    public async Task<string> LoginAsync(LoginModelDto loginModel)
+    {
+        try
+        {
+            var user = await _userManager.FindByEmailAsync(loginModel.Email);
+
+            if (user is null) throw new InvalidOperationException("User not found");
+
+            if (!user.EmailConfirmed)
+            {
+                throw new InvalidOperationException("Your email isn`t confirmed. Please, confirm email before login");
+            }
+
+            var isPasswordValid = await _userManager.CheckPasswordAsync(user, loginModel.Password);
+
+            if (!isPasswordValid) throw new Exception("Invalid email or password");
+
+            var userWithIncludes = await _userManager.GetUserByIdAsync(user.Id);
+
+            var token = await _tokenService.GenerateTokenAsync(userWithIncludes);
+
+            return token;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error occurred while login user: {ex.Message}");
+
+            throw;
+        }
+    }
+
     public async Task<string> RegisterUserAsync(RegisterModel model)
     {
         try
@@ -27,12 +59,9 @@ public class IdentityService : IIdentityService
             var user = new User
             {
                 Email = model.Email,
-                UserName = model.Email,
-                PhoneNumber = model.Phone,
+                UserName = $"{model.FirstName}.{model.LastName}",
                 FirstName = model.FirstName,
-                LastName = model.LastName,
-                Description = model.Description,
-                Age = model.Age
+                LastName = model.LastName
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
