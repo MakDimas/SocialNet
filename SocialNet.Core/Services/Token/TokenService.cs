@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SocialNet.Domain.Identity;
 using System.IdentityModel.Tokens.Jwt;
@@ -21,23 +22,23 @@ public class TokenService : ITokenService
 
     public async Task<string> GenerateTokenAsync(User user)
     {
-        var claims = new List<Claim>();
-
-        string firstName = user.FirstName,
-               lastName = user.LastName,
-               userName = user.UserName,
-               email = user.Email,
-               phone = user.PhoneNumber;
-
-        claims.AddRange(
-        [
+        var claims = new List<Claim>
+        {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, email),
-            new Claim(ClaimTypes.Name, userName),
-            new Claim(ClaimTypes.GivenName, firstName),
-            new Claim(ClaimTypes.Surname, lastName),
-            new Claim(ClaimTypes.MobilePhone, phone)
-        ]);
+            new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            new Claim(ClaimTypes.Name, user.UserName),
+            new Claim(ClaimTypes.GivenName, user.FirstName),
+            new Claim(ClaimTypes.Surname, user.LastName)
+        };
+
+        if (!string.IsNullOrEmpty(user.PhoneNumber))
+            claims.Add(new Claim(ClaimTypes.MobilePhone, user.PhoneNumber));
+
+        if (!string.IsNullOrEmpty(user.Description))
+            claims.Add(new Claim("description", user.Description));
+
+        if (user.Age.HasValue)
+            claims.Add(new Claim("age", user.Age.Value.ToString()));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
