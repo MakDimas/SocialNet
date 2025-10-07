@@ -52,8 +52,6 @@ export default {
                     "lastName": this.lastName
                 });
 
-debugger;
-
                 if (result){
                     this.emailToConfirm = this.email;
                     this.clearData();
@@ -133,7 +131,6 @@ neu2 = #d1d9e6
 purple = #5b21b6
 textGray = #6b7280
 
-// Scope to login view to avoid global bleed
 .login-view
   // container for centering
   display flex

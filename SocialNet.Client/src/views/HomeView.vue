@@ -1,8 +1,11 @@
 <script>
 import { useLoginStore } from '@/stores/login.js';
 import { useRouter } from 'vue-router'
+import AddPost from '@/components/AddPost.vue'
+import ShowPosts from '@/components/ShowPosts.vue'
 
 export default {
+  components: { AddPost, ShowPosts },
   data() {
     const raw = localStorage.getItem('user');
     let parsed = {};
@@ -14,19 +17,12 @@ export default {
     const phoneNumber = parsed.phoneNumber || parsed.phone || '';
     const age = parsed.age || '';
     const description = parsed.description || '';
+    const userId = parsed.id || parsed.userId || parsed.userID || parsed.sub || '';
 
     return {
       profile: { firstName, lastName, email, phoneNumber, age, description },
+      userId,
       showPostForm: false,
-      postForm: {
-        firstName,
-        lastName,
-        email,
-        homepage: '',
-        captchaInput: '',
-        text: ''
-      },
-      captchaCode: ''
     };
   },
   setup(){
@@ -47,52 +43,16 @@ export default {
     },
     openPostForm() {
       if (this.showPostForm) return;
-      this.postForm = {
-        firstName: this.profile.firstName || '',
-        lastName: this.profile.lastName || '',
-        email: this.profile.email || '',
-        homepage: '',
-        captchaInput: '',
-        text: ''
-      };
-      this.captchaCode = this.generateCaptcha();
       this.showPostForm = true;
+      this.$nextTick(() => {
+        if (typeof window !== 'undefined') {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
     },
     closePostForm() {
       this.showPostForm = false;
     },
-    generateCaptcha() {
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-      let s = '';
-      for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
-      return s;
-    },
-    isValidUrl(value) {
-      if (!value) return true;
-      try { new URL(value); return true; } catch { return false; }
-    },
-    submitPost() {
-      const { firstName, lastName, email, homepage, captchaInput, text } = this.postForm;
-      if (!firstName || !lastName || !email) {
-        alert('User name and email are required');
-        return;
-      }
-      if (!text || !text.trim()) {
-        alert('Text is required');
-        return;
-      }
-      if (!this.isValidUrl(homepage)) {
-        alert('Home page must be a valid URL');
-        return;
-      }
-      if (!captchaInput || captchaInput.trim().length === 0) {
-        alert('CAPTCHA is required');
-        return;
-      }
-      // Stub: emulate success
-      console.log('Post created:', { firstName, lastName, email, homepage, text });
-      this.closePostForm();
-    }
   },
   computed: {
     fullName() {
@@ -128,38 +88,19 @@ export default {
             span.value {{ profile.age || '—' }}
     div.content
       div.up-panel
-        button.add-post(type="btn" @click="openPostForm") Add Post
+        div.left-buttons
+          button.add-post(type="btn" @click="openPostForm") Add Post
+          button.show-posts(type="btn") Show Posts
         button.logout-button(type="btn" @click="logout") Logout
-      // Post form card
-      div.post-form-card(v-if="showPostForm")
-        div.post-form-header
-          h3.post-form-title Create Post
-          button.post-form-close(@click="closePostForm") ✕
-        form.post-form(@submit.prevent="submitPost")
-          // User Name
-          div.form-row
-            label.form-label User Name
-            input.form-input(type="text" :value="`${postForm.firstName} ${postForm.lastName}`.trim()" disabled required)
-          // Email
-          div.form-row
-            label.form-label Email
-            input.form-input(type="email" :value="postForm.email" disabled required)
-          // Home page
-          div.form-row
-            label.form-label Home page (optional)
-            input.form-input(type="url" v-model="postForm.homepage" placeholder="https://example.com")
-          // CAPTCHA (stub)
-          div.form-row.captcha-row
-            label.form-label CAPTCHA
-            div.captcha-box {{ captchaCode }}
-            input.form-input(type="text" v-model="postForm.captchaInput" placeholder="Enter code" required)
-          // Text
-          div.form-row
-            label.form-label Text
-            textarea.form-textarea(v-model="postForm.text" rows="5" placeholder="Write your post..." required)
-          div.form-actions
-            button.primary-button(type="submit") Publish
-            button.secondary-button(type="button" @click="closePostForm") Cancel
+      AddPost(
+        v-if="showPostForm"
+        :profile="profile"
+        :userId="userId"
+        @created="() => { closePostForm(); $refs.posts && ($refs.posts.pageNumber = 1); $refs.posts && $refs.posts.loadPosts && $refs.posts.loadPosts(); $refs.posts && $refs.posts.clearPreview && $refs.posts.clearPreview() }"
+        @close="() => { closePostForm(); $refs.posts && $refs.posts.clearPreview && $refs.posts.clearPreview() }"
+        @preview="$refs.posts?.togglePreview ? $refs.posts.togglePreview($event) : $refs.posts?.addPreview($event)"
+      )
+      ShowPosts(ref="posts" :profile="profile" :user-id="userId")
 </template>
 
 <style lang='stylus'>
@@ -177,14 +118,18 @@ textGray = #6b7280
 
 body
   width 100%
-  height 100vh
-  display flex
-  justify-content center
-  align-items center
+  min-height 100vh
+  overflow-y auto
+  overflow-x hidden
   font-family "Manrope", sans-serif
   font-size 12px
   background-color neu1
   color textGray
+  scrollbar-width thin
+  scrollbar-color neu2 transparent
+
+html
+  scroll-behavior smooth
 
 .main
   position relative
@@ -199,12 +144,28 @@ body
 
 .sidebar
   height calc(100vh - 48px)
+  position sticky
+  top 24px
+  align-self start
+  overflow auto
 
 .content
   background #fff
   border-radius 20px
   box-shadow 8px 8px 16px neu2, -8px -8px 16px #ffffff
   min-height calc(100vh - 48px)
+
+// Global scrollbar styling (WebKit)
+::-webkit-scrollbar
+  width 8px
+  height 8px
+
+::-webkit-scrollbar-thumb
+  background-color neu2
+  border-radius 8px
+
+::-webkit-scrollbar-track
+  background transparent
 
 .post-form-card
   margin 18px auto
@@ -246,6 +207,7 @@ body
 
 .form-label
   font-weight 700
+  font-size: 14px;
   color #111827
   margin-bottom 6px
 
@@ -272,20 +234,145 @@ body
   resize vertical
 
 .captcha-row
-  display flex
-  flex-direction column
-  gap 8px
+  grid-template-columns 180px 1fr auto
+  gap 12px
+  @media (max-width: 900px)
+    grid-template-columns 1fr
 
-.captcha-box
+.captcha-img
   height 44px
+  border-radius 10px
+  background neu1
+  box-shadow inset 2px 2px 4px neu2, inset -2px -2px 4px #ffffff
+  object-fit contain
+
+.refresh-captcha
+  position: relative;
+  height 44px
+  margin-left 10px
+  padding 0 14px
+  border none
+  top -18px
+  border-radius 10px
+  background #111827
+  color #fff
+  font-weight 700
+  cursor pointer
+  box-shadow 8px 8px 16px neu2, -8px -8px 16px #ffffff
+
+.attachment-controls
   display flex
   align-items center
-  justify-content center
-  font-weight 800
-  letter-spacing 2px
-  background neu1
+  gap 12px
+
+.attach-button,
+.remove-attachment
+  height 44px
+  padding 0 14px
+  border none
   border-radius 10px
+  background #111827
+  color #fff
+  font-weight 700
+  cursor pointer
+  box-shadow 8px 8px 16px neu2, -8px -8px 16px #ffffff
+
+.remove-attachment
+  background #b91c1c
+
+.attachment-error
+  color #b91c1c
+  font-weight 700
+
+.attachment-preview
+  margin-top 8px
+
+.attachment-img
+  max-width 320px
+  max-height 240px
+  border-radius 12px
+  background neu1
   box-shadow inset 2px 2px 4px neu2, inset -2px -2px 4px #ffffff
+
+.attachment-file
+  font-weight 700
+
+.editor-toolbar
+  display flex
+  gap 8px
+  margin-bottom 8px
+
+.editor a
+  color #2563eb
+  text-decoration underline
+  cursor pointer
+
+.toolbar-button
+  height 36px
+  padding 0 12px
+  border none
+  border-radius 10px
+  background #111827
+  color #fff
+  font-weight 700
+  cursor pointer
+  box-shadow 8px 8px 16px neu2, -8px -8px 16px #ffffff
+
+.toolbar-button.active
+  background purple
+
+.link-tool
+  position relative
+
+.link-panel
+  position absolute
+  top 0
+  left calc(100% + 8px)
+  display inline-flex
+  align-items center
+  gap 6px
+  background #fff
+  border-radius 10px
+  box-shadow 8px 8px 16px neu2, -8px -8px 16px #ffffff
+  padding 4px 6px
+
+.link-input
+  width 220px
+  height 32px
+  padding 0 10px
+  border none
+  outline none
+  background-color neu1
+  border-radius 8px
+  box-shadow inset 2px 2px 4px neu2, inset -2px -2px 4px #ffffff
+  font-size 13px
+
+.link-apply,
+.link-cancel
+  height 32px
+  padding 0 10px
+  border none
+  border-radius 8px
+  background #111827
+  color #fff
+  font-weight 700
+  cursor pointer
+  box-shadow 8px 8px 16px neu2, -8px -8px 16px #ffffff
+
+.link-error
+  margin-left 6px
+  color #b91c1c
+  font-weight 700
+  font-size 12px
+
+.slide-left-enter-active,
+.slide-left-leave-active
+  transition opacity .18s ease, transform .18s ease
+
+.slide-left-enter-from,
+.slide-left-leave-to
+  opacity 0
+  transform translateX(8px)
 
 .form-actions
   grid-column 1 / -1
@@ -349,7 +436,7 @@ body
   padding 32px
   border-radius 20px
   background #fff
-  box-shadow 8px 8px 16px neu2, -8px -8px 16px #ffffff
+  box-shadow 8px 8px 16px -16px #d1d9e6, -8px -8px 16px -16px #fff
   display flex
   flex-direction column
   align-items center
@@ -414,7 +501,36 @@ body
 
 danger = #e3363c
 
+.left-buttons
+  display flex
+  gap 12px
+
 .add-post
+  display inline-flex
+  align-items center
+  justify-content center
+  padding 12px 18px
+  height 44px
+  min-width 140px
+  background purple
+  color #fff
+  border none
+  border-radius 12px
+  font-weight 800
+  font-size 14px
+  letter-spacing .5px
+  box-shadow 8px 8px 16px neu2, -8px -8px 16px #ffffff
+  cursor pointer
+  transition transition
+  &:hover
+    box-shadow 6px 6px 12px neu2, -6px -6px 12px #ffffff
+    transform scale(0.985)
+  &:active,
+  &:focus
+    box-shadow 2px 2px 6px neu2, -2px -2px 6px #ffffff
+    transform scale(0.97)
+
+.show-posts
   display inline-flex
   align-items center
   justify-content center
@@ -464,4 +580,19 @@ danger = #e3363c
     box-shadow 2px 2px 6px neu2, -2px -2px 6px #ffffff
     transform scale(0.97)
 
+.home-url-group
+  display grid
+  grid-template-columns 1fr auto
+  gap 10px
+
+.use-url-button
+  height 44px
+  padding 0 14px
+  border none
+  border-radius 10px
+  background #111827
+  color #fff
+  font-weight 700
+  cursor pointer
+  box-shadow 8px 8px 16px neu2, -8px -8px 16px #ffffff
 </style>
