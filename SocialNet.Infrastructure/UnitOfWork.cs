@@ -10,6 +10,7 @@ public class UnitOfWork : IUnitOfWork, IDisposable
 {
     private readonly AppDbContext _dbContext;
     private IUserRepository _userRepository;
+    private IPostRepository _postRepository;
 
     private bool _disposed = false;
 
@@ -21,11 +22,15 @@ public class UnitOfWork : IUnitOfWork, IDisposable
     private IUserRepository UserRepository =>
         _userRepository ??= new UserRepository(_dbContext);
 
+    private IPostRepository PostRepository =>
+        _postRepository ??= new PostRepository(_dbContext);
+
     public T GetRepository<T>() where T : class
     {
         return typeof(T) switch
         {
             _ when typeof(T) == typeof(IUserRepository) => (T)UserRepository,
+            _ when typeof(T) == typeof(IPostRepository) => (T)PostRepository,
 
             _ => throw new ArgumentException($"No repository found for type {typeof(T).Name}"),
         };

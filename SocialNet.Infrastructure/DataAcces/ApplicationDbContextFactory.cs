@@ -11,7 +11,7 @@ public class ApplicationDbContextFactory : IDesignTimeDbContextFactory<AppDbCont
         var basePath = Directory.GetCurrentDirectory();
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile(Path.Combine(basePath, "../SocialNet/appsettings.json"))
+            .AddJsonFile(Path.Combine(basePath, "../SocialNet.WebAPI/appsettings.json"))
             .Build();
 
         var builder = new DbContextOptionsBuilder<AppDbContext>();
