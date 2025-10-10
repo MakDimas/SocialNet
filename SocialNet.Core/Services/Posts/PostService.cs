@@ -5,7 +5,6 @@ using SocialNet.Core.Dtos.PostDtos;
 using SocialNet.Core.Profiles;
 using SocialNet.Core.Repositories;
 using SocialNet.Domain.Posts;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace SocialNet.Core.Services.Posts;
 

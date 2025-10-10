@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SocialNet.Core.Dtos.Models;
 using SocialNet.Core.Services.Captcha;
-using System.Net.Mime;
 
 namespace SocialNet.WebAPI.Controllers;
 
@@ -42,5 +41,3 @@ public class CaptchaController : BaseController
         });
     }
 }
-
-

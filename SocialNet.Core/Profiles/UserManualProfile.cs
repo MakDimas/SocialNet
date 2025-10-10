@@ -1,6 +1,5 @@
 ﻿using SocialNet.Core.Dtos.UserDtos;
 using SocialNet.Domain.Identity;
-using SocialNet.Domain.Posts;
 
 namespace SocialNet.Core.Profiles;
 

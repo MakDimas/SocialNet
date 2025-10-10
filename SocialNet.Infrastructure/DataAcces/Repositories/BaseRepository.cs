@@ -88,4 +88,3 @@ public class BaseRepository<TEntity> : IRepository<TEntity> where TEntity : clas
     public void Delete(TEntity entity) =>
         _dbSet.Remove(entity);
 }
-

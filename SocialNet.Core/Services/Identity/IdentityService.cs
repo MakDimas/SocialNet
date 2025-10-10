@@ -87,7 +87,8 @@ public class IdentityService : IIdentityService
 
         if (!result.Succeeded)
         {
-            return "Email confirmation failed.";
+            var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+            throw new InvalidOperationException($"Email confirmation failed: {errors}");
         }
 
         return "Email confirmed successfully.";

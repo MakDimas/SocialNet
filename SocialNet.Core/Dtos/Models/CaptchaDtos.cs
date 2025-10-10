@@ -16,5 +16,3 @@ public sealed class CaptchaValidateResponse
 {
     public required bool Valid { get; init; }
 }
-
-
