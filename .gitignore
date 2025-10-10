@@ -361,3 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/SocialNet.WebAPI/SocialNet.http
+/SocialNet.WebAPI/appsettings.json
+/SocialNet.WebAPI/appsettings.Development.json
+/SocialNet.WebAPI/Properties/launchSettings.json
