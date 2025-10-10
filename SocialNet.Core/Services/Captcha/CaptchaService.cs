@@ -1,8 +1,12 @@
 using Microsoft.Extensions.Caching.Memory;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
+using SixLabors.Fonts;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing;
+using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using System.Security.Cryptography;
+using System.Numerics;
 
 namespace SocialNet.Core.Services.Captcha;
 
@@ -54,55 +58,81 @@ public sealed class CaptchaService : ICaptchaService
         const int width = 220;
         const int height = 60;
 
-        using var bmp = new Bitmap(width, height);
-        using var gfx = Graphics.FromImage(bmp);
-        gfx.SmoothingMode = SmoothingMode.AntiAlias;
-        int Rand(int max) => RandomNumberGenerator.GetInt32(max);
+        static int NextInt(int max) => RandomNumberGenerator.GetInt32(max);
 
-        gfx.Clear(Color.FromArgb(0xEE, 0xF2, 0xF7));
+        using var image = new Image<Rgba32>(width, height);
 
-        using (var pen = new Pen(Color.FromArgb(180, 200, 210), 1))
+        var backgroundColor = Color.FromRgb(0xEE, 0xF2, 0xF7);
+        image.Mutate(ctx => ctx.Fill(backgroundColor));
+
+        image.Mutate(ctx =>
         {
             for (int i = 0; i < 6; i++)
             {
-                pen.Color = Color.FromArgb(150 + Rand(50), 150 + Rand(50), 150 + Rand(50));
-                gfx.DrawBezier(pen,
-                    new Point(Rand(width), Rand(height)),
-                    new Point(Rand(width), Rand(height)),
-                    new Point(Rand(width), Rand(height)),
-                    new Point(Rand(width), Rand(height)));
+                var color = Color.FromRgb(
+                    (byte)(150 + NextInt(50)),
+                    (byte)(150 + NextInt(50)),
+                    (byte)(150 + NextInt(50)));
+                var pointCount = 4 + NextInt(4);
+                var points = new PointF[pointCount];
+                for (int p = 0; p < pointCount; p++)
+                {
+                    points[p] = new PointF(NextInt(width), NextInt(height));
+                }
+                var builder = new PathBuilder();
+                builder.AddLines(points);
+                var path = builder.Build();
+                ctx.Draw(color, 1f, path);
             }
-        }
+        });
 
-        using var path = new GraphicsPath();
-        using var font = new Font(FontFamily.GenericSansSerif, 28, FontStyle.Bold);
-        var bounds = new Rectangle(10, 5, width - 20, height - 10);
-        int x = 20;
-        foreach (var ch in text)
+        var font = SystemFonts.CreateFont("DejaVu Sans", 30, SixLabors.Fonts.FontStyle.Bold);
+        var textColor = Color.FromRgb(70, 70, 90);
+
+        int leftMargin = 10;
+        int rightMargin = 10;
+        float step = (width - leftMargin - rightMargin) / (float)text.Length;
+        float cy = height / 2f;
+
+        for (int i = 0; i < text.Length; i++)
         {
-            using var tmpPath = new GraphicsPath();
-            tmpPath.AddString(ch.ToString(), font.FontFamily, (int)FontStyle.Bold, 36, new Point(x, 10), StringFormat.GenericTypographic);
-            float angle = (float)(Rand(21) - 10);
-            using var m = new Matrix();
-            m.RotateAt(angle, new PointF(x + 12, 30));
-            tmpPath.Transform(m);
-            path.AddPath(tmpPath, false);
-            x += 32;
+            char character = text[i];
+            float cx = leftMargin + step * i + step / 2f;
+            float rotation = NextInt(21) - 10;
+
+            var glyphPath = TextBuilder.GenerateGlyphs(character.ToString(), new RichTextOptions(font)
+            {
+                Dpi = 96
+            });
+
+            var bounds = glyphPath.Bounds;
+            var centerX = bounds.X + bounds.Width / 2f;
+            var centerY = bounds.Y + bounds.Height / 2f;
+
+            var translateToCell = Matrix3x2.CreateTranslation(cx - centerX, cy - centerY);
+            var rotateAroundCenter = Matrix3x2.CreateRotation((float)(Math.PI * rotation / 180.0), new Vector2(cx, cy));
+            var finalTransform = translateToCell * rotateAroundCenter;
+
+            var transformed = glyphPath.Transform(finalTransform);
+            image.Mutate(ctx => ctx.Fill(textColor, transformed));
         }
 
-        using var brush = new SolidBrush(Color.FromArgb(70, 70, 90));
-        gfx.FillPath(brush, path);
-
-        using (var pen = new Pen(Color.FromArgb(100, 120, 130), 1))
+        image.Mutate(ctx =>
         {
             for (int i = 0; i < 8; i++)
             {
-                gfx.DrawArc(pen, Rand(width - 40), Rand(height - 20), 40 + Rand(40), 20 + Rand(20), Rand(360), Rand(360));
+                int w = 40 + NextInt(40);
+                int h = 20 + NextInt(20);
+                int x = NextInt(Math.Max(1, width - w));
+                int y = NextInt(Math.Max(1, height - h));
+
+                var ellipse = new EllipsePolygon(x + w / 2f, y + h / 2f, w / 2f, h / 2f);
+                ctx.Draw(Color.FromRgb(100, 120, 130), 1f, ellipse);
             }
-        }
+        });
 
         using var ms = new MemoryStream();
-        bmp.Save(ms, ImageFormat.Png);
+        image.SaveAsPng(ms);
         return ms.ToArray();
     }
 }

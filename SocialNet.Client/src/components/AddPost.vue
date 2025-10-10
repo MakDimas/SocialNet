@@ -556,8 +556,8 @@ export default {
           span.attachment-file {{ attachmentName }} ({{ (attachmentSize/1024).toFixed(1) }} KB)
       // Text
       div.form-row
-        label.form-label Text*
-        div
+        div.text-row
+          label.form-label Text*
           div.editor-toolbar
             button.toolbar-button(:class="{active: isItalicActive}" type="button" @mousedown.prevent @click="toggleFormat('italic')") [i]
             button.toolbar-button(:class="{active: isBoldActive}" type="button" @mousedown.prevent @click="toggleFormat('bold')") [strong]
@@ -570,7 +570,7 @@ export default {
                   button.link-apply(type="button" @click="confirmInsertLink") OK
                   button.link-cancel(type="button" @click="cancelLinkMode") ✕
                   span.link-error(v-if="linkError") {{ linkError }}
-          div.form-textarea(
+        div.form-textarea(
             ref="editor"
             class="editor"
             contenteditable="true"

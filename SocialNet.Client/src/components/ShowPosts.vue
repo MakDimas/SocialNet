@@ -227,7 +227,7 @@ export default {
               div.author-email {{ post.userEmail }}
               div.author-home(v-if="getHomeUrl(post)")
                 a(:href="getHomeUrl(post)" @click.prevent="openHome(getHomeUrl(post))") {{ getHomeUrl(post) }}
-            div.post-date-top(v-if="!post.parentPostId && !post.parentId && (post.createdAt || post.CreatedAt)") {{ (new Date(post.createdAt || post.CreatedAt)).toLocaleDateString('ru-RU', {day:'2-digit',month:'2-digit',year:'numeric'}) }} at {{ (new Date(post.createdAt || post.CreatedAt)).toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'}) }}
+            div.post-date-top(v-if="!post.parentPostId && !post.parentId && (post.createdAt)") {{ new Date(post.createdAt + 'Z').toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(',', ' at') }}
             button.reply-button-top(type="button" v-if="!post.parentPostId && !post.parentId" @click="replyTo(post)") ↩ Reply
           div.post-body
             div.post-text(v-html="post.text")

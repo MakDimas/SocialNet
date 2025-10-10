@@ -34,11 +34,12 @@ export default {
       if (!dateString) return '';
       try {
         const date = new Date(dateString);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+        const day = String(localDate.getDate()).padStart(2, '0');
+        const month = String(localDate.getMonth() + 1).padStart(2, '0');
+        const year = localDate.getFullYear();
+        const hours = String(localDate.getHours()).padStart(2, '0');
+        const minutes = String(localDate.getMinutes()).padStart(2, '0');
         return `${day}.${month}.${year} at ${hours}:${minutes}`;
       } catch {
         return '';
@@ -60,7 +61,7 @@ export default {
         div.author-email {{ reply.userEmail }}
         div.author-home(v-if="getHomeUrl(reply)")
           a(:href="getHomeUrl(reply)" @click.prevent="openHome(getHomeUrl(reply))") {{ getHomeUrl(reply) }}
-      div.post-date-top(v-if="reply.createdAt || reply.CreatedAt") {{ formatDate(reply.createdAt || reply.CreatedAt) }}
+      div.post-date-top(v-if="reply.createdAt") {{ formatDate(reply.createdAt) }}
     div.post-body
       div.post-text(v-html="reply.text")
       template(v-if="getAttachment(reply)")
