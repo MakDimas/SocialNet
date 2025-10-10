@@ -47,7 +47,6 @@ public class IdentityService : IIdentityService
         catch (Exception ex)
         {
             _logger.LogError(ex, $"Error occurred while login user: {ex.Message}");
-
             throw;
         }
     }
@@ -59,12 +58,17 @@ public class IdentityService : IIdentityService
             var user = new User
             {
                 Email = model.Email,
-                UserName = $"{model.FirstName}.{model.LastName}",
+                UserName = $"{model.FirstName.Trim()}.{model.LastName.Trim()}",
                 FirstName = model.FirstName,
                 LastName = model.LastName
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Error during user registration: {errors}");
+            }
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 

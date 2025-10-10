@@ -129,8 +129,8 @@ export default {
         attachmentDto = {
           type: this.attachmentType || '',
           fileName: this.attachmentName,
-          contentType: this.attachmentBlob.type || this.attachmentContentType || '',
-          fileSize: this.attachmentSize || this.attachmentBlob.size || 0,
+          contentType: this.attachmentContentType || '',
+          fileSize: this.attachmentSize || 0,
           data: base64,
         };
       }
@@ -162,8 +162,8 @@ export default {
         const base64 = await this.blobToBase64(this.attachmentBlob);
         attachment = {
           fileName: this.attachmentName,
-          contentType: this.attachmentBlob.type || this.attachmentContentType || 'application/octet-stream',
-          fileSize: this.attachmentSize || this.attachmentBlob.size || 0,
+          contentType: this.attachmentContentType || 'application/octet-stream',
+          fileSize: this.attachmentSize || 0,
           data: base64
         };
       }
@@ -179,7 +179,7 @@ export default {
       this.$emit('preview', preview);
     },
     useMyUrl() {
-      const base = 'http://localhost:5173';
+      const base = 'https://socialnetclient-cxggdqdrfwg6h0bd.northeurope-01.azurewebsites.net';
       let firstName = (this.profile?.firstName || '').trim();
       let lastName = (this.profile?.lastName || '').trim();
       let id = this.userId;
@@ -187,8 +187,8 @@ export default {
         try {
           const raw = localStorage.getItem('user');
           const parsed = raw ? JSON.parse(raw) : {};
-          firstName = firstName || (parsed.firstName || parsed.givenName || '').trim();
-          lastName = lastName || (parsed.lastName || parsed.surname || '').trim();
+          firstName = firstName || (parsed.firstName || '').trim();
+          lastName = lastName || (parsed.lastName || '').trim();
           id = parsed.id || 'me';
           this.userId = parsed.id;
         } catch {
@@ -544,7 +544,7 @@ export default {
         input.form-input.captcha-input(type="text" v-model="postForm.captchaInput" placeholder="Enter code" required)
       // Attachment
       div.form-row.attachment-row
-        label.form-label Attachment (JPG, PNG, GIF up to 320x240; TXT up to 100KB)
+        label.form-label Attachment (JPG, PNG, GIF; TXT up to 100KB)
         div.attachment-controls
           input(type="file" ref="fileInput" accept="image/jpeg,image/png,image/gif,.txt" @change="onAttachmentChange" hidden)
           button.attach-button(type="button" @click="triggerFileSelect") Attach file

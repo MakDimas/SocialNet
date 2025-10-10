@@ -19,11 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Services\Emails\Templates\RegisterConfirmationTemplate.cshtml" />
+    <None Remove="Services/Emails/Templates/RegisterConfirmationTemplate.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Services\Emails\Templates\RegisterConfirmationTemplate.cshtml" />
+    <EmbeddedResource Include="Services/Emails/Templates/*.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

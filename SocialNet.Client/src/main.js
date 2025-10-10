@@ -1,3 +1,4 @@
+import './css/front.styl'
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import Toast from "vue-toastification";

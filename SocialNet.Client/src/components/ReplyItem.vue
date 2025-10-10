@@ -7,6 +7,20 @@ export default {
     openImage: { type: Function, required: true }
   },
   methods: {
+    openHome(url) {
+      if (!url) return;
+      try {
+        const u = new URL(url, window.location.origin);
+        if (u.origin === window.location.origin) {
+          const path = u.pathname + u.search + u.hash;
+          this.$router.push(path);
+        } else {
+          window.location.href = url;
+        }
+      } catch {
+        window.location.href = url;
+      }
+    },
     getAttachment(obj) {
       return obj?.attachment || obj?.Attachment || null;
     },
@@ -45,7 +59,7 @@ export default {
         div.author-name {{ reply.userName }}
         div.author-email {{ reply.userEmail }}
         div.author-home(v-if="getHomeUrl(reply)")
-          a(:href="getHomeUrl(reply)" target="_blank" rel="noopener") {{ getHomeUrl(reply) }}
+          a(:href="getHomeUrl(reply)" @click.prevent="openHome(getHomeUrl(reply))") {{ getHomeUrl(reply) }}
       div.post-date-top(v-if="reply.createdAt || reply.CreatedAt") {{ formatDate(reply.createdAt || reply.CreatedAt) }}
     div.post-body
       div.post-text(v-html="reply.text")
@@ -87,5 +101,3 @@ export default {
     color #2563eb
     text-decoration underline
 </style>
-
-

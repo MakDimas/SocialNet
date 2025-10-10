@@ -26,4 +26,26 @@ public class UserController : BaseController
             Message = "User was created successfully"
         });
     }
-}
+
+    [HttpGet]
+    public async Task<IActionResult> GetUserByFullNameAndId([FromQuery] UserInfoFromUrl userInfo)
+    {
+        return Ok(new ActionResultWrapper<UserResponseDto>
+        {
+            Status = StatusCodes.Status200OK,
+            Data = await _userService.GetUserByFullNameAndIdAsync(userInfo),
+            Message = "User retrieved"
+        });
+    }
+
+    [HttpPut]
+    public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDto updateDto)
+    {
+        return Ok(new ActionResultWrapper<UserResponseDto>
+        {
+            Status = StatusCodes.Status200OK,
+            Data = await _userService.UpdateUserAsync(updateDto),
+            Message = "User updated successfully"
+        });
+    }
+} 

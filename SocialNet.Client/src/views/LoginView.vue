@@ -1,6 +1,7 @@
 <script>
 import { useLoginStore } from '@/stores/login.js';
 import { useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
 
 export default {
     data() {
@@ -23,42 +24,129 @@ export default {
     setup() {
 		const loginStore = useLoginStore();
 		const router = useRouter()
+        const toast = useToast();
 
 		return {
 			doLogin: loginStore.doLogin,
 			doSignUp: loginStore.signUp,
-			router
+			router,
+            toast
 		};
 	},
     methods: {
+        isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
+        },
+        isValidPassword(password) {
+            const p = String(password || '');
+            const rules = [
+                /.{8,}/,
+                /[A-Z]/,
+                /\d/,
+                /[^A-Za-z0-9]/
+            ];
+            return rules.every(r => r.test(p));
+        },
+        isAlphaNumLatin(value) {
+            return /^[A-Za-z0-9]+$/.test(String(value || ''));
+        },
+        _getErrorMessage(payload, fallback = 'Request failed') {
+            try {
+                if (!payload) return fallback;
+                if (typeof payload === 'string') return payload;
+                const msg = payload.message || payload.Message || payload.error || payload.Error || payload.detail || payload.Detail || payload.title || payload.Title;
+                if (msg) return String(msg);
+                const errs = payload.errors || payload.Errors || payload.errorMessages || payload.ErrorMessages;
+                if (Array.isArray(errs) && errs.length) return errs.map(e => (typeof e === 'string' ? e : JSON.stringify(e))).join('\n');
+                if (errs && typeof errs === 'object') {
+                    const firstKey = Object.keys(errs)[0];
+                    if (firstKey) {
+                        const val = errs[firstKey];
+                        if (Array.isArray(val)) return val.join('\n');
+                        return String(val);
+                    }
+                }
+                return fallback;
+            } catch {
+                return fallback;
+            }
+        },
+        _prettifyMessage(message, fallback = 'Request failed') {
+            try {
+                let s = String(message || '').trim();
+                if (!s) return fallback;
+                s = s.replace(/\r/g, '');
+                let firstLine = s.split('\n')[0];
+                if (firstLine.includes(':')) {
+                    const idx = firstLine.lastIndexOf(':');
+                    if (idx >= 0 && idx + 1 < firstLine.length) {
+                        const tail = firstLine.slice(idx + 1).trim();
+                        if (tail) firstLine = tail;
+                    }
+                }
+                if (firstLine.length > 180) firstLine = firstLine.slice(0, 180) + '…';
+                return firstLine;
+            } catch {
+                return fallback;
+            }
+        },
+        validateSignUp() {
+            const firstName = (this.firstName || '').trim();
+            const lastName = (this.lastName || '').trim();
+            const email = (this.email || '').trim();
+            const password = this.password || '';
+
+            if (!firstName) { this.toast.error('First name is required'); return false; }
+            if (!this.isAlphaNumLatin(firstName)) { this.toast.error('First name may contain only Latin letters and digits'); return false; }
+            if (!lastName) { this.toast.error('Last name is required'); return false; }
+            if (!this.isAlphaNumLatin(lastName)) { this.toast.error('Last name may contain only Latin letters and digits'); return false; }
+            if (!email) { this.toast.error('Email is required'); return false; }
+            if (!this.isValidEmail(email)) { this.toast.error('Email is not valid'); return false; }
+            if (!password) { this.toast.error('Password is required'); return false; }
+            if (!this.isValidPassword(password)) {
+                this.toast.error('Password must be 8+ chars, include 1 uppercase, 1 digit and 1 special symbol');
+                return false;
+            }
+            return true;
+        },
         async signIn() {
-            let result = await this.doLogin({
+            const result = await this.doLogin({
                 "email": this.email,
                 "password": this.password
             });
-
-            if (result) {
+            if (result && result.success) {
                 this.clearData();
                 this.router.push('/home');
+            } else if (result && result.message) {
+                this.toast.error(result.message);
             }
         },
 
         async signUp() {
+            if (!this.validateSignUp()) return;
             try {
-                let result = await this.doSignUp({
+                const result = await this.doSignUp({
                     "email": this.email,
                     "password": this.password,
                     "firstName": this.firstName,
                     "lastName": this.lastName
                 });
 
-                if (result){
+                if (result && result.success){
                     this.emailToConfirm = this.email;
                     this.clearData();
                     this.signUpSuccessfullResult = true;
+                } else if (result && result.message) {
+                    this.toast.error(result.message);
                 }
             } catch (e) {
-                console.error('Sign up failed', e);
+                let payload = e?.response?.data;
+                if (payload && typeof payload === 'object' && typeof payload.text === 'function') {
+                    try { payload = await payload.text(); } catch {}
+                }
+                const raw = this._getErrorMessage(payload, e?.message || 'Registration failed');
+                const msg = this._prettifyMessage(raw, 'Registration failed');
+                this.toast.error(msg);
             }
         },
 
@@ -122,247 +210,3 @@ export default {
                       p.switch__description.description To keep connected with us please login with your personal info
                       button(type='button' @click="currentBlock = States.SignUp").switch__button.button.switch-btn SIGN UP
 </template>
-
-<style lang='stylus'>
-
-transition = all .25s ease
-neu1 = #eef2f7
-neu2 = #d1d9e6
-purple = #5b21b6
-textGray = #6b7280
-
-.login-view
-  // container for centering
-  display flex
-  align-items center
-  justify-content center
-  width 100vw
-  min-height 100vh
-
-*, *::after, *::before
-  box-sizing border-box
-  user-select none
-
-.login-view .main
-  position relative
-  width 1000px
-  min-width 1000px
-  min-height 600px
-  height 600px
-  padding 25px
-  background-color #fff
-  box-shadow 10px 10px 20px neu2, -10px -10px 20px #ffffff
-  border-radius 16px
-  overflow hidden
-  @media (max-width: 1200px)
-    transform scale(0.7)
-  @media (max-width: 1000px)
-    transform scale(0.6)
-  @media (max-width: 800px)
-    transform scale(0.5)
-  @media (max-width: 600px)
-    transform scale(0.4)
-
-.container
-  display flex
-  justify-content center
-  align-items center
-  position absolute
-  top 0
-  width 600px
-  height 100%
-  padding 25px
-  background-color #fff
-  transition transition
-
-.form
-  display flex
-  justify-content center
-  align-items center
-  flex-direction column
-  width 100%
-  height 100%
-
-  &__icon
-    object-fit contain
-    width 30px
-    margin 0 5px
-    opacity 0.5
-    transition 0.15s
-    &:hover
-      opacity 1
-      transition 0.15s
-      cursor pointer
-
-  &__input
-    width 350px
-    height 44px
-    margin 6px 0
-    padding-left 18px
-    font-size 14px
-    letter-spacing 0.15px
-    border none
-    outline none
-    font-family "Manrope", sans-serif
-    background-color neu1
-    transition 0.25s ease
-    border-radius 10px
-    box-shadow inset 2px 2px 4px neu2, inset -2px -2px 4px #ffffff
-    &:focus
-      box-shadow inset 4px 4px 8px neu2, inset -4px -4px 8px #ffffff
-
-  &__span
-    margin-top 10px
-    margin-bottom 12px
-
-  &__link
-    color #111827
-    font-size 15px
-    margin-top 25px
-    border-bottom 1px solid #9ca3af
-    line-height 2
-
-.title
-  font-size 36px
-  font-weight 800
-  color #111827
-  margin-bottom 10px
-
-.description
-  font-size 14px
-  letter-spacing 0.25px
-  text-align center
-
-.button
-  width 180px
-  height 50px
-  border-radius 25px
-  margin-top 40px
-  font-weight 800
-  font-size 14px
-  letter-spacing 1.15px
-  background-color purple
-  color white
-  box-shadow 8px 8px 16px neu2, -8px -8px 16px #ffffff
-  border none
-  outline none
-
-.success-card
-  display flex
-  flex-direction column
-  align-items center
-  justify-content center
-  width 100%
-  height 100%
-  text-align center
-
-  .success-icon
-    width 96px
-    height 96px
-    border-radius 50%
-    display flex
-    align-items center
-    justify-content center
-    font-size 42px
-    font-weight 800
-    color #10b981
-    background-color neu1
-    box-shadow inset 4px 4px 8px neu2, inset -4px -4px 8px #ffffff
-    margin-bottom 18px
-
-  .email
-    font-weight 700
-    color #111827
-
-.a-container
-  z-index 100
-  left calc(100% - 600px)
-
-.b-container
-  left calc(100% - 600px)
-  z-index 0
-
-.switch
-  display flex
-  justify-content center
-  align-items center
-  position absolute
-  top 0
-  left 0
-  height 100%
-  width 400px
-  padding 50px
-  z-index 200
-  transition transition
-  background-color neu1
-  overflow hidden
-  box-shadow 4px 4px 10px neu2, -4px -4px 10px #ffffff
-
-  &__circle
-    position absolute
-    width 500px
-    height 500px
-    border-radius 50%
-    background-color neu1
-    box-shadow inset 8px 8px 12px neu2, inset -8px -8px 12px #ffffff
-    bottom -60%
-    left -60%
-    transition transition
-
-    &--t
-      top -30%
-      left 60%
-      width 300px
-      height 300px
-
-  &__container
-    display flex
-    justify-content center
-    align-items center
-    flex-direction column
-    position absolute
-    width 400px
-    padding 50px 55px
-    transition transition
-
-  &__button
-    cursor pointer
-    &:hover
-      box-shadow 6px 6px 10px neu2, -6px -6px 10px #ffffff
-      transform scale(0.985)
-      transition 0.25s
-    &:active,
-    &:focus
-      box-shadow 2px 2px 6px neu2, -2px -2px 6px #ffffff
-      transform scale(0.97)
-      transition 0.25s
-
-.is-txr
-  left calc(100% - 400px)
-  transition transition
-  transform-origin left
-
-.is-txl
-  left 0
-  transition transition
-  transform-origin right
-
-.is-z200
-  z-index 200
-  transition transition
-
-.is-hidden
-  visibility hidden
-  opacity 0
-  position absolute
-  transition transition
-
-.is-gx
-  animation is-gx .6s ease
-
-@keyframes is-gx
-  0%, 10%, 100%
-    width 400px
-  30%, 50%
-    width 500px
-</style>
