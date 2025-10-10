@@ -18,7 +18,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "https://localhost:7091;http://localhost:5044"
+      "applicationUrl": "https://socialnet-f7g8f2crc2gmggh0.northeurope-01.azurewebsites.net;http://localhost:5044"
     },
     "IIS Express": {
       "commandName": "IISExpress",

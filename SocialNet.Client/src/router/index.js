@@ -28,10 +28,35 @@ const router = createRouter({
       component: () => import('../views/HomeView.vue'),
     },
     {
+      path: '/settings',
+      name: 'settings',
+      component: () => import('../views/AccountSettingsView.vue'),
+    },
+    {
       path: '/emailConfirmation',
       name: 'emailConfirmation',
       component: () => import('../views/EmailConfirmationView.vue'),
       meta: { withoutAuth: true },
+    },
+    {
+      path: '/user/:fullName/:id',
+      name: 'userProfilePublic',
+      component: () => import('../views/UserProfileView.vue'),
+      meta: { withoutAuth: true },
+      props: route => ({
+        fullName: route.params.fullName,
+        id: Number(route.params.id)
+      })
+    },
+    {
+      path: '/:fullName/:id',
+      name: 'userProfilePublicRoot',
+      component: () => import('../views/UserProfileView.vue'),
+      meta: { withoutAuth: true },
+      props: route => ({
+        fullName: route.params.fullName,
+        id: Number(route.params.id)
+      })
     },
   ],
 })

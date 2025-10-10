@@ -1,0 +1,185 @@
+.posts-wrapper
+  width 95%
+  margin 16px auto
+  padding 16px 18px
+  background #fff
+  border-radius 16px
+  box-shadow 8px 8px 16px #d1d9e6, -8px -8px 16px #ffffff
+  overflow-y auto
+  overflow-x hidden
+
+.posts-toolbar
+  display flex
+  justify-content space-between
+  align-items center
+  margin-bottom 12px
+
+.sort-group, .page-group
+  display flex
+  align-items center
+  gap 12px
+
+.sort-label
+  font-weight 700
+  color #111827
+
+.sort-button, .page-button
+  height 32px
+  padding 0 12px
+  border none
+  border-radius 10px
+  background #111827
+  color #fff
+  font-weight 700
+  cursor pointer
+  box-shadow 8px 8px 16px #d1d9e6, -8px -8px 16px #ffffff
+
+.sort-button.active
+  background #5b21b6
+
+.sort-arrow
+  margin-left 8px
+  font-weight 900
+
+.sort-group .sort-button + .sort-button
+  margin-left 12px
+
+.posts-list
+  display flex
+  flex-direction column
+  gap 12px
+
+.post-card
+  padding 16px
+  background #eef2f7
+  border-radius 12px
+  box-shadow inset 2px 2px 4px #d1d9e6, inset -2px -2px 4px #ffffff
+
+.post-card.preview
+  border 2px dashed #5b21b6
+
+.replies-thread
+  margin-top 8px
+
+.reply-preview-item
+  margin-bottom 8px
+
+.post-header
+  display flex
+  gap 12px
+  align-items center
+  margin-bottom 8px
+  position relative
+
+.post-date-top
+  position absolute
+  right 100px
+  top 15px
+  font-size 12px
+  color #6b7280
+  font-weight 600
+  white-space nowrap
+
+.reply-button-top
+  position absolute
+  right 8px
+  top 8px
+  height 32px
+  padding 0 12px
+  border none
+  border-radius 10px
+  background #111827
+  color #fff
+  font-weight 700
+  cursor pointer
+  box-shadow 8px 8px 16px #d1d9e6, -8px -8px 16px #ffffff
+
+.post-avatar
+  width 40px
+  height 40px
+  border-radius 50%
+  background #fff
+  box-shadow inset 2px 2px 4px #d1d9e6, inset -2px -2px 4px #ffffff
+  display flex
+  align-items center
+  justify-content center
+  font-weight 800
+  color #5b21b6
+
+.author-name
+  font-weight 800
+  color #111827
+
+.author-email
+  color #374151
+  font-size 12px
+
+.author-home
+  font-size 12px
+  a
+    color #2563eb
+    text-decoration underline
+
+.post-text
+  color #111827
+  margin 8px 0
+
+.post-image
+  max-width 320px
+  max-height 240px
+  border-radius 12px
+  background #eef2f7
+  box-shadow inset 2px 2px 4px #d1d9e6, inset -2px -2px 4px #ffffff
+  cursor zoom-in
+.lightbox-overlay
+  position fixed
+  inset 0
+  background rgba(0,0,0,0.6)
+  display flex
+  align-items center
+  justify-content center
+  z-index 1000
+
+.lightbox-image
+  max-width 90vw
+  max-height 90vh
+  border-radius 12px
+  background #fff
+  animation zoomIn .18s ease forwards
+
+@keyframes zoomIn
+  from
+    transform scale(0.98)
+    opacity .98
+  to
+    transform scale(1)
+    opacity 1
+
+.fade-zoom-enter-active,
+.fade-zoom-leave-active
+  transition opacity .18s ease
+
+.fade-zoom-enter-from,
+.fade-zoom-leave-to
+  opacity 0
+
+.post-file
+  font-weight 700
+  color #2563eb
+  text-decoration underline
+
+.reply-form-wrapper
+  margin-top 12px
+
+.posts-footer
+  margin-top 12px
+  display flex
+  justify-content center
+  align-items center
+  gap 12px
+
+.loader, .error
+  padding 12px
+  text-align center
+  font-weight 700
+  

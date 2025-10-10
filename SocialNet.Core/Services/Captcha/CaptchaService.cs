@@ -59,10 +59,8 @@ public sealed class CaptchaService : ICaptchaService
         gfx.SmoothingMode = SmoothingMode.AntiAlias;
         int Rand(int max) => RandomNumberGenerator.GetInt32(max);
 
-        // background
         gfx.Clear(Color.FromArgb(0xEE, 0xF2, 0xF7));
 
-        // draw noise lines
         using (var pen = new Pen(Color.FromArgb(180, 200, 210), 1))
         {
             for (int i = 0; i < 6; i++)
@@ -108,5 +106,3 @@ public sealed class CaptchaService : ICaptchaService
         return ms.ToArray();
     }
 }
-
-

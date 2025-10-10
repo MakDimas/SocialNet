@@ -18,7 +18,7 @@ export default {
       isLoading: false,
       error: '',
       pageNumber: 1,
-      pageSize: 5,
+      pageSize: 25,
       sortBy: 'CreatedAt',
       sortDirection: 'Desc',
       totalPages: 1,
@@ -38,6 +38,20 @@ export default {
     this.loadPosts();
   },
   methods: {
+    openHome(url) {
+      if (!url) return;
+      try {
+        const u = new URL(url, window.location.origin);
+        if (u.origin === window.location.origin) {
+          const path = u.pathname + u.search + u.hash;
+          this.$router.push(path);
+        } else {
+          window.location.href = url;
+        }
+      } catch {
+        window.location.href = url;
+      }
+    },
     replyTo(post) {
       const id = post.Id || post.id;
       if (this.replyingToPostId === id) {
@@ -171,9 +185,15 @@ export default {
     div.posts-toolbar
       div.sort-group
         span.sort-label Sort by:
-        button.sort-button(type="button" @click="switchSort('UserName')" :class="{active: sortBy==='UserName'}") User Name
-        button.sort-button(type="button" @click="switchSort('UserEmail')" :class="{active: sortBy==='UserEmail'}") User Email
-        button.sort-button(type="button" @click="switchSort('CreatedAt')" :class="{active: sortBy==='CreatedAt'}") Created At
+          button.sort-button(type="button" @click="switchSort('UserName')" :class="{active: sortBy==='UserName'}")
+            | User Name
+            span.sort-arrow(v-if="sortBy==='UserName'") {{ sortDirection === 'Asc' ? '▲' : '▼' }}
+          button.sort-button(type="button" @click="switchSort('UserEmail')" :class="{active: sortBy==='UserEmail'}")
+            | User Email
+            span.sort-arrow(v-if="sortBy==='UserEmail'") {{ sortDirection === 'Asc' ? '▲' : '▼' }}
+          button.sort-button(type="button" @click="switchSort('CreatedAt')" :class="{active: sortBy==='CreatedAt'}")
+            | Created At
+            span.sort-arrow(v-if="sortBy==='CreatedAt'") {{ sortDirection === 'Asc' ? '▲' : '▼' }}
       div.page-group
         button.page-button(type="button" @click="prevPage" :disabled="pageNumber===1") ◀
         span.page-info Page {{ pageNumber }} / {{ totalPages }}
@@ -188,7 +208,7 @@ export default {
               div.author-name {{ previewPostItem.userName }}
               div.author-email {{ previewPostItem.userEmail }}
               div.author-home(v-if="getHomeUrl(previewPostItem)")
-                a(:href="getHomeUrl(previewPostItem)" target="_blank" rel="noopener") {{ getHomeUrl(previewPostItem) }}
+                a(:href="getHomeUrl(previewPostItem)" @click.prevent="openHome(getHomeUrl(previewPostItem))") {{ getHomeUrl(previewPostItem) }}
           div.post-body
             div.post-text(v-html="previewPostItem.text")
             template(v-if="previewPostItem.attachment")
@@ -206,7 +226,7 @@ export default {
               div.author-name {{ post.userName }}
               div.author-email {{ post.userEmail }}
               div.author-home(v-if="getHomeUrl(post)")
-                a(:href="getHomeUrl(post)" target="_blank" rel="noopener") {{ getHomeUrl(post) }}
+                a(:href="getHomeUrl(post)" @click.prevent="openHome(getHomeUrl(post))") {{ getHomeUrl(post) }}
             div.post-date-top(v-if="!post.parentPostId && !post.parentId && (post.createdAt || post.CreatedAt)") {{ (new Date(post.createdAt || post.CreatedAt)).toLocaleDateString('ru-RU', {day:'2-digit',month:'2-digit',year:'numeric'}) }} at {{ (new Date(post.createdAt || post.CreatedAt)).toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'}) }}
             button.reply-button-top(type="button" v-if="!post.parentPostId && !post.parentId" @click="replyTo(post)") ↩ Reply
           div.post-body
@@ -227,7 +247,7 @@ export default {
                       div.author-name {{ replyPreviewsByParentId[post.Id || post.id].userName }}
                       div.author-email {{ replyPreviewsByParentId[post.Id || post.id].userEmail }}
                       div.author-home(v-if="getHomeUrl(replyPreviewsByParentId[post.Id || post.id])")
-                        a(:href="getHomeUrl(replyPreviewsByParentId[post.Id || post.id])" target="_blank" rel="noopener") {{ getHomeUrl(replyPreviewsByParentId[post.Id || post.id]) }}
+                        a(:href="getHomeUrl(replyPreviewsByParentId[post.Id || post.id])" @click.prevent="openHome(getHomeUrl(replyPreviewsByParentId[post.Id || post.id]))") {{ getHomeUrl(replyPreviewsByParentId[post.Id || post.id]) }}
                   div.post-body
                     div.post-text(v-html="replyPreviewsByParentId[post.Id || post.id].text")
                     template(v-if="replyPreviewsByParentId[post.Id || post.id].attachment")
@@ -261,183 +281,3 @@ export default {
         span.page-info Page {{ pageNumber }} / {{ totalPages }} ({{ totalCount }} total)
         button.page-button(type="button" @click="nextPage" :disabled="pageNumber===totalPages") Next ▶
 </template>
-
-<style lang='stylus'>
-.posts-wrapper
-  width 95%
-  margin 16px auto
-  padding 16px 18px
-  background #fff
-  border-radius 16px
-  box-shadow 8px 8px 16px #d1d9e6, -8px -8px 16px #ffffff
-  overflow-y auto
-  overflow-x hidden
-
-.posts-toolbar
-  display flex
-  justify-content space-between
-  align-items center
-  margin-bottom 12px
-
-.sort-group, .page-group
-  display flex
-  align-items center
-  gap 8px
-
-.sort-label
-  font-weight 700
-  color #111827
-
-.sort-button, .page-button
-  height 32px
-  padding 0 12px
-  border none
-  border-radius 10px
-  background #111827
-  color #fff
-  font-weight 700
-  cursor pointer
-  box-shadow 8px 8px 16px #d1d9e6, -8px -8px 16px #ffffff
-
-.sort-button.active
-  background #5b21b6
-
-.posts-list
-  display flex
-  flex-direction column
-  gap 12px
-
-.post-card
-  padding 16px
-  background #eef2f7
-  border-radius 12px
-  box-shadow inset 2px 2px 4px #d1d9e6, inset -2px -2px 4px #ffffff
-
-.post-card.preview
-  border 2px dashed #5b21b6
-
-.replies-thread
-  margin-top 8px
-
-.reply-preview-item
-  margin-bottom 8px
-
-.post-header
-  display flex
-  gap 12px
-  align-items center
-  margin-bottom 8px
-  position relative
-
-.post-date-top
-  position absolute
-  right 100px
-  top 15px
-  font-size 12px
-  color #6b7280
-  font-weight 600
-  white-space nowrap
-
-.reply-button-top
-  position absolute
-  right 8px
-  top 8px
-  height 32px
-  padding 0 12px
-  border none
-  border-radius 10px
-  background #111827
-  color #fff
-  font-weight 700
-  cursor pointer
-  box-shadow 8px 8px 16px #d1d9e6, -8px -8px 16px #ffffff
-
-.post-avatar
-  width 40px
-  height 40px
-  border-radius 50%
-  background #fff
-  box-shadow inset 2px 2px 4px #d1d9e6, inset -2px -2px 4px #ffffff
-  display flex
-  align-items center
-  justify-content center
-  font-weight 800
-  color #5b21b6
-
-.author-name
-  font-weight 800
-  color #111827
-
-.author-email
-  color #374151
-  font-size 12px
-
-.author-home
-  font-size 12px
-  a
-    color #2563eb
-    text-decoration underline
-
-.post-text
-  color #111827
-  margin 8px 0
-
-.post-image
-  max-width 320px
-  max-height 240px
-  border-radius 12px
-  background #eef2f7
-  box-shadow inset 2px 2px 4px #d1d9e6, inset -2px -2px 4px #ffffff
-  cursor zoom-in
-.lightbox-overlay
-  position fixed
-  inset 0
-  background rgba(0,0,0,0.6)
-  display flex
-  align-items center
-  justify-content center
-  z-index 1000
-
-.lightbox-image
-  max-width 90vw
-  max-height 90vh
-  border-radius 12px
-  background #fff
-  animation zoomIn .18s ease forwards
-
-@keyframes zoomIn
-  from
-    transform scale(0.98)
-    opacity .98
-  to
-    transform scale(1)
-    opacity 1
-
-.fade-zoom-enter-active,
-.fade-zoom-leave-active
-  transition opacity .18s ease
-
-.fade-zoom-enter-from,
-.fade-zoom-leave-to
-  opacity 0
-
-.post-file
-  font-weight 700
-  color #2563eb
-  text-decoration underline
-
-.reply-form-wrapper
-  margin-top 12px
-
-.posts-footer
-  margin-top 12px
-  display flex
-  justify-content center
-  align-items center
-  gap 12px
-
-.loader, .error
-  padding 12px
-  text-align center
-  font-weight 700
-</style>

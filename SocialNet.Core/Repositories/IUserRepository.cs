@@ -1,5 +1,7 @@
-﻿namespace SocialNet.Core.Repositories;
+﻿using SocialNet.Domain.Identity;
 
-public interface IUserRepository
+namespace SocialNet.Core.Repositories;
+
+public interface IUserRepository : IRepository<User>
 {
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SocialNet.Domain.Identity;
+using SocialNet.Domain.Posts;
 
 namespace SocialNet.Infrastructure.DataAcces;
 

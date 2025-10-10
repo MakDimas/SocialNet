@@ -9,5 +9,3 @@ export async function validateCaptcha({ captchaId, input }) {
   const { data } = await api.post('/Captcha/Validate', { CaptchaId: captchaId, Input: input }, { skipAuth: true });
   return data.data;
 }
-
-
