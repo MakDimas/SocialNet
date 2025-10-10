@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -152,6 +153,31 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     dbContext.Database.Migrate();
 }
+
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        var exceptionHandlerFeature = context.Features.Get<IExceptionHandlerFeature>();
+        var exception = exceptionHandlerFeature?.Error;
+        
+        var statusCode = exception is InvalidOperationException 
+            ? StatusCodes.Status400BadRequest 
+            : StatusCodes.Status500InternalServerError;
+        
+        context.Response.StatusCode = statusCode;
+        context.Response.ContentType = "application/json";
+        
+        var response = new
+        {
+            status = statusCode,
+            message = exception?.Message ?? "An error occurred",
+            data = (object)null
+        };
+        
+        await context.Response.WriteAsJsonAsync(response);
+    });
+});
 
 app.UseSwagger();
 app.UseSwaggerUI();

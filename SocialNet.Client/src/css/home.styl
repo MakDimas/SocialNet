@@ -126,26 +126,62 @@ html
   box-shadow inset 2px 2px 4px neu2, inset -2px -2px 4px #ffffff
   resize vertical
 
+.text-row
+  display flex
+  align-items center
+  justify-content space-between
+  width 100%
+  gap 8px
+  margin-bottom 8px
+  .form-label
+    margin-bottom 0
+    flex 1
+  .editor-toolbar
+    margin-bottom 0
+    flex-shrink 0
+
+.editor
+  width 100%
+  min-height 120px
+  display block
+  padding 10px 12px
+
 .captcha-row
-  grid-template-columns 180px 1fr auto
+  display grid
+  grid-template-columns 200px 1fr
+  align-items center
   gap 12px
   @media (max-width: 900px)
     grid-template-columns 1fr
+    align-items stretch
+  > .form-label
+    grid-column 1 / -1
+  > .captcha-visual
+    grid-column 1
+  > .captcha-input
+    grid-column 2
+
+.captcha-visual
+  display grid
+  grid-template-columns 1fr auto
+  align-items center
+  height 56px
+  width 100%
+  gap 10px
 
 .captcha-img
-  height 44px
+  width 100%
+  height 100%
+  display block
   border-radius 10px
   background neu1
   box-shadow inset 2px 2px 4px neu2, inset -2px -2px 4px #ffffff
   object-fit contain
 
 .refresh-captcha
-  position: relative;
-  height 44px
-  margin-left 10px
+  height 40px
   padding 0 14px
   border none
-  top -18px
   border-radius 10px
   background #111827
   color #fff

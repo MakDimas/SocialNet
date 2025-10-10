@@ -36,9 +36,9 @@ export const useLoginStore = defineStore('login', {
 			try {
 				let s = String(message || '').trim();
 				if (!s) return fallback;
-				// normalize and strip basic HTML
+				
 				s = s.replace(/\r/g, '').replace(/<[^>]*>/g, ' ');
-				// Known backend pattern
+				
 				let m = s.match(/Error during user registration:\s*([^\n<]+)/i);
 				if (m && m[1]) return m[1].trim();
 				m = s.match(/System\.[A-Za-z]+Exception:\s*([^\n<]+)/i);
@@ -47,7 +47,7 @@ export const useLoginStore = defineStore('login', {
 					if (t.includes(':')) t = t.slice(t.lastIndexOf(':') + 1).trim();
 					if (t) return t;
 				}
-				// Fallback: first non-empty line, then take text after last colon
+				
 				let firstLine = (s.split('\n').find(l => l && l.trim().length) || '').trim();
 				if (firstLine.includes(':')) {
 					const idx = firstLine.lastIndexOf(':');
@@ -74,7 +74,7 @@ export const useLoginStore = defineStore('login', {
 						username: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"],
 						firstName: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"],
 						lastName: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"],
-						phone: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/mobilephone"],
+						phoneNumber: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/mobilephone"],
 						description: decoded.description,
 						age: decoded.age
 					}
