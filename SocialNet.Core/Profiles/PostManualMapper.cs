@@ -1,6 +1,5 @@
 ﻿using SocialNet.Core.Dtos.PostDtos;
 using SocialNet.Domain.Posts;
-using System.Net.Mail;
 
 namespace SocialNet.Core.Profiles;
 

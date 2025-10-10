@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using SocialNet.Domain.Identity;
 using System.IdentityModel.Tokens.Jwt;
@@ -12,12 +10,10 @@ namespace SocialNet.Core.Services.Token;
 public class TokenService : ITokenService
 {
     private readonly IConfiguration _config;
-    private readonly UserManager<User> _userManager;
 
-    public TokenService(IConfiguration config, UserManager<User> userManager)
+    public TokenService(IConfiguration config)
     {
         _config = config;
-        _userManager = userManager;
     }
 
     public async Task<string> GenerateTokenAsync(User user)
